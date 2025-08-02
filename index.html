@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Trò Chơi Giải Lao: "Tôi Là Ai?"</title>
+	<link rel="icon" type="image/gaming" href="images/gaming.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #A8E6CF, #D4EEFF, #C7CEEA);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 40px;
+            padding: 35px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2), 0 6px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 5px solid #9FD9B7;
+            position: relative;
+            min-height: 400px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        .game-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            padding-right: 25px;
+            max-width: 60%;
+        }
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            text-align: left;
+            color: #3BB143;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            width: 100%;
+            text-shadow: 2px 2px 5px rgba(59,177,67,0.3);
+        }
+        .question {
+            font-size: 26px;
+            margin: 15px 0;
+            text-align: left;
+            color: #2F4F4F;
+            background: #E8F5E9;
+            padding: 25px;
+            border-radius: 25px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px dashed #81C784;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .answers {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .answers button {
+            padding: 18px;
+            font-size: 20px;
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(90deg, #64B5F6, #4DB6AC);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .answers button:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(90deg, #42A5F5, #26A69A);
+        }
+        .answers button.correct {
+            background: linear-gradient(90deg, #8BC34A, #388E3C);
+            box-shadow: 0 5px 15px rgba(0, 178, 0, 0.4);
+        }
+        .answers button.wrong {
+            background: linear-gradient(90deg, #FF7043, #FF3D00);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+        .answers button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .feedback {
+            margin-top: 25px;
+            font-weight: 700;
+            font-size: 22px;
+            text-align: left;
+            min-height: 30px;
+            width: 100%;
+            color: #388E3C;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+        .feedback.wrong-try-again {
+            color: #FF7043;
+        }
+        .feedback.wrong-final {
+            color: #D32F2F;
+        }
+        .feedback.hint-msg {
+            color: #1976D2;
+        }
+        #nextBtn, #hintBtn, #backToMenuBtn {
+            margin-top: 25px;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            color: white;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        #nextBtn {
+            background: linear-gradient(90deg, #66BB6A, #43A047);
+        }
+        #nextBtn:hover:not(:disabled) {
+            background: linear-gradient(90deg, #43A047, #388E3C);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        #hintBtn {
+            background: linear-gradient(90deg, #81D4FA, #29B6F6);
+            margin-left: 10px;
+        }
+        #hintBtn:hover:not(:disabled) {
+            background: linear-gradient(90deg, #29B6F6, #0288D1);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        #hintBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        #backToMenuBtn {
+            background: linear-gradient(90deg, #FFB74D, #FF9800);
+            margin-left: 10px;
+        }
+        #backToMenuBtn:hover:not(:disabled) {
+            background: linear-gradient(90deg, #FF9800, #FB8C00);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        #backToMenuBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .animal-image-container {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .animal-image {
+            width: 300px;
+            height: 250px;
+            object-fit: contain;
+            border-radius: 20px;
+            border: 4px solid #8BC34A;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            animation: fadeIn 0.7s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.7) rotate(10deg); }
+            to { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        /* Màn hình Menu Chính */
+        .hidden {
+            display: none !important;
+        }
+        .main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #A8E6CF, #D4EEFF, #C7CEEA);
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .main-menu h1 {
+            font-family: 'Comic Neue', cursive;
+            color: #2F4F4F;
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .main-menu .game-title-menu {
+            font-family: 'Dancing Script', cursive;
+            color: #3BB143;
+            font-size: 4.5em;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-shadow: 3px 3px 7px rgba(59,177,67,0.4);
+            text-align: center;
+            line-height: 1.2;
+        }
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        .menu-buttons button { /* Áp dụng chung cho các nút trên menu */
+            padding: 20px 40px;
+            font-size: 2.2em;
+            border-radius: 30px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+            width: 80%;
+            max-width: 400px;
+        }
+        .start-button {
+            background: linear-gradient(90deg, #FFC0CB, #9FD9B7);
+        }
+        .start-button:hover {
+            transform: translateY(-7px) scale(1.03);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+            background: linear-gradient(90deg, #FF99AA, #7CB342);
+        }
+        .continue-button {
+            background: linear-gradient(90deg, #81D4FA, #29B6F6);
+        }
+        .continue-button:hover {
+            transform: translateY(-7px) scale(1.03);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+            background: linear-gradient(90deg, #29B6F6, #0288D1);
+        }
+        .menu-image {
+            width: 450px;
+            height: auto;
+            margin-top: 50px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite alternate;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-15px); }
+        }
+        /* Nút Cài đặt trên Menu chính */
+        .settings-button {
+            padding: 15px 30px;
+            font-size: 1.8em;
+            border-radius: 25px;
+            border: none;
+            background: linear-gradient(90deg, #ADD8E6, #87CEEB);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .settings-button:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(90deg, #87CEEB, #4682B4);
+        }
+        /* Pop-up Cài đặt */
+        .settings-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .popup-content {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            transform: scale(0.9);
+            animation: popIn 0.3s forwards cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .popup-content h2 {
+            font-family: 'Dancing Script', cursive;
+            color: #3BB143;
+            font-size: 3.2em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(59,177,67,0.2);
+        }
+        /* Điều khiển bật/tắt âm thanh tổng */
+        .audio-control {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid #9FD9B7;
+            font-weight: 700;
+            color: #2F4F4F;
+        }
+        .audio-control:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .audio-icon {
+            width: 35px;
+            height: 35px;
+        }
+        #audioStatus {
+            font-size: 1.2em;
+        }
+        /* Tùy chỉnh âm lượng chi tiết */
+        .volume-controls {
+            margin-top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #D4EEFF;
+            width: 100%;
+            max-width: 350px;
+        }
+        .volume-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2F4F4F;
+        }
+        .volume-slider-group label {
+            min-width: 90px;
+        }
+        .volume-slider-group .volume-icon {
+            width: 25px;
+            height: 25px;
+            vertical-align: middle;
+        }
+        .volume-slider {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #D3D3D3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            border-radius: 5px;
+        }
+        .volume-slider:hover {
+            opacity: 1;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #8BC34A;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #8BC34A;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* Nút Đóng trong pop-up */
+        .close-popup-button {
+            padding: 12px 25px;
+            font-size: 1.3em;
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(90deg, #FF6F61, #E63946);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+        .close-popup-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(90deg, #E63946, #CC2936);
+        }
+        /* Media queries cho màn hình nhỏ */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 25px;
+                min-height: auto;
+                align-items: center;
+                border-radius: 30px;
+            }
+            .game-content {
+                max-width: 100%;
+                padding-right: 0;
+                align-items: center;
+            }
+            h1, .question, .feedback {
+                text-align: center;
+                font-size: 38px;
+            }
+            .question {
+                font-size: 22px;
+                padding: 20px;
+            }
+            .answers {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            .answers button {
+                font-size: 18px;
+                padding: 15px;
+            }
+            #nextBtn, #hintBtn, #backToMenuBtn {
+                align-self: center;
+                margin-top: 20px;
+                font-size: 16px;
+                padding: 12px 25px;
+            }
+            .animal-image-container {
+                position: static;
+                max-width: 90%;
+                margin-top: 30px;
+                right: auto;
+                top: auto;
+                transform: none;
+                background: none;
+                box-shadow: none;
+            }
+            .animal-image {
+                width: 200px;
+                height: auto;
+                border-radius: 15px;
+                border: 3px solid #8BC34A;
+            }
+            /* Media queries cho menu trên thiết bị nhỏ */
+            .main-menu h1 {
+                font-size: 2.5em;
+            }
+            .main-menu .game-title-menu {
+                font-size: 3.5em;
+            }
+            .menu-buttons button { /* Áp dụng cho nút trên menu */
+                font-size: 1.8em;
+                padding: 15px 30px;
+            }
+            .menu-image {
+                width: 80%;
+                margin-top: 30px;
+            }
+            /* Cài đặt pop-up trên thiết bị nhỏ */
+            .settings-button {
+                font-size: 1.5em;
+                padding: 12px 25px;
+            }
+            .popup-content {
+                padding: 25px;
+                gap: 15px;
+            }
+            .popup-content h2 {
+                font-size: 2.5em;
+                margin-bottom: 15px;
+            }
+            .audio-control,
+            .volume-controls {
+                width: 100%;
+                max-width: 100%;
+                padding: 15px;
+            }
+            .audio-icon {
+                width: 28px;
+                height: 28px;
+            }
+            #audioStatus {
+                font-size: 1em;
+            }
+            .volume-slider-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .volume-slider-group label {
+                min-width: auto;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-menu" id="mainMenu">
+        <h1>Chào mừng bé đến với</h1>
+        <h2 class="game-title-menu">Trò Chơi "Tôi Là Ai?"</h2>
+        <div class="menu-buttons">
+            <button class="start-button" id="newGameBtn" onclick="startNewGame()"></button>
+            <button class="continue-button hidden" id="continueGameBtn" onclick="continueGame()">➡️ Tiếp tục chơi</button>
+        </div>
+        <button class="settings-button" onclick="showSettings()">⚙️ Cài đặt</button>
+        <img src="image/welcome_animals.webp" alt="Chào mừng đến với thế giới động vật" class="menu-image">
+    </div>
+
+    <div class="settings-popup hidden" id="settingsPopup">
+        <div class="popup-content">
+            <h2>⚙️ Cài đặt Âm thanh</h2>
+            <div class="audio-control" onclick="toggleBackgroundMusic()">
+                <img id="audioIcon" src="ui/audio_on.png" alt="Âm thanh bật" class="audio-icon">
+                <span id="audioStatus">Âm thanh: Bật</span>
+            </div>
+
+            <div class="volume-controls">
+                <div class="volume-slider-group">
+                    <label for="bgVolume">Nhạc nền:</label>
+                    <img src="ui/volume_down.png" alt="Giảm âm lượng" class="volume-icon">
+                    <input type="range" id="bgVolume" class="volume-slider" min="0" max="1" step="0.05" value="0.05" oninput="setBackgroundMusicVolume(this.value)">
+                    <img src="ui/volume_up.png" alt="Tăng âm lượng" class="volume-icon">
+                </div>
+                <div class="volume-slider-group">
+                    <label for="effectVolume">Hiệu ứng:</label>
+                    <img src="ui/volume_down.png" alt="Giảm âm lượng" class="volume-icon">
+                    <input type="range" id="effectVolume" class="volume-slider" min="0" max="1" step="0.05" value="0.7" oninput="setEffectSoundVolume(this.value)">
+                    <img src="ui/volume_up.png" alt="Tăng âm lượng" class="volume-icon">
+                </div>
+                <div class="volume-slider-group">
+                    <label for="animalVolume">Động vật:</label>
+                    <img src="ui/volume_down.png" alt="Giảm âm lượng" class="volume-icon">
+                    <input type="range" id="animalVolume" class="volume-slider" min="0" max="1" step="0.05" value="0.8" oninput="setAnimalSoundVolume(this.value)">
+                    <img src="ui/volume_up.png" alt="Tăng âm lượng" class="volume-icon">
+                </div>
+            </div>
+            <button class="close-popup-button" onclick="hideSettings()">Đóng</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="gameContainer">
+        <div class="game-content">
+            <h1>🎮 Bé đoán xem tôi là ai?</h1>
+            <div class="question" id="question">Câu hỏi sẽ hiển thị ở đây...</div>
+            <div class="answers">
+                <button onclick="checkAnswer(0)"></button>
+                <button onclick="checkAnswer(1)"></button>
+                <button onclick="checkAnswer(2)"></button>
+            </div>
+            <div class="feedback" id="feedback"></div>
+            <div style="display: flex; gap: 10px; margin-top: 0;">
+                <button id="hintBtn" onclick="playHintSound()">🎶 Gợi ý âm thanh</button>
+                <button id="nextBtn" class="hidden" onclick="nextQuestion()">➡️ Câu hỏi tiếp theo</button>
+                <button id="backToMenuBtn" onclick="backToMainMenu()">🏠 Về menu</button>
+            </div>
+        </div>
+
+        <div class="animal-image-container" id="animalImageContainer"></div>
+    </div>
+
+    <audio id="correctSound" src="sound/correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="sound/wrong.mp3" preload="auto"></audio>
+    <audio id="animalSound" preload="auto"></audio>
+    <audio id="backgroundMusic" src="sound/music.mp3" loop preload="auto"></audio>
+
+    <script>
+        const originalQuestions = [
+            { id: 1, q: "Tôi có chiếc vòi dài, tai to, sống trong rừng. Tôi là ai?", options: ["Hổ", "Voi", "Nai"], answer: 1, image: "image/elephant.png", sound: "elephant.mp3" },
+            { id: 2, q: "Tôi nhảy rất nhanh, thích ăn chuối và leo cây. Tôi là ai?", options: ["Khỉ", "Sóc", "Voi"], answer: 0, image: "image/monkey.png", sound: "monkey.mp3" },
+            { id: 3, q: "Tôi có lông vằn, gầm rất to. Tôi là ai?", options: ["Hổ", "Nai", "Khỉ"], answer: 0, image: "image/tiger.png", sound: "tiger.mp3" },
+            { id: 4, q: "Tôi có gạc đẹp, chạy nhanh trong rừng. Tôi là ai?", options: ["Sóc", "Nai", "Voi"], answer: 1, image: "image/deer.png", sound: "deer.mp3" },
+            { id: 5, q: "Tôi nhỏ bé, chạy nhanh, thích ăn hạt và leo cây giỏi. Tôi là ai?", options: ["Khỉ", "Sóc", "Hổ"], answer: 1, image: "image/squirrel.png", sound: "squirrel.mp3" }
+        ];
+
+        let current = 0;
+        let currentAnimalImage = null;
+        let attemptsLeft = 2;
+        let shuffledOptions = [];
+        let correctAnswerIndexInShuffled = -1;
+        let shuffledQuestions = [];
+        let isMusicPlaying = false;
+        let gameInProgress = false;
+
+        // Lấy các phần tử DOM
+        const questionElement = document.getElementById("question");
+        const feedbackElement = document.getElementById("feedback");
+        const nextBtn = document.getElementById("nextBtn");
+        const animalImageContainer = document.getElementById("animalImageContainer");
+        const correctSound = document.getElementById("correctSound");
+        const wrongSound = document.getElementById("wrongSound");
+        const animalSound = document.getElementById("animalSound");
+        const backgroundMusic = document.getElementById("backgroundMusic");
+        const hintBtn = document.getElementById("hintBtn");
+        const backToMenuBtn = document.getElementById("backToMenuBtn");
+
+        const mainMenu = document.getElementById("mainMenu");
+        const gameContainer = document.getElementById("gameContainer");
+        const settingsPopup = document.getElementById("settingsPopup");
+
+        const audioIcon = document.getElementById("audioIcon");
+        const audioStatus = document.getElementById("audioStatus");
+
+        // Các thanh trượt âm lượng
+        const bgVolumeSlider = document.getElementById("bgVolume");
+        const effectVolumeSlider = document.getElementById("effectVolume");
+        const animalVolumeSlider = document.getElementById("animalVolume");
+
+        // Nút "Tiếp tục chơi" và "Bắt đầu chơi mới"
+        const newGameBtn = document.getElementById("newGameBtn");
+        const continueGameBtn = document.getElementById("continueGameBtn");
+
+        // KHỞI TẠO answerButtons MỘT LẦN KHI SCRIPT TẢI
+        // Đảm bảo dòng này nằm sau khi các phần tử HTML đã được tải (ví dụ: cuối file script)
+        const answerButtons = document.querySelectorAll(".answers button"); 
+
+        // Đặt âm lượng ban đầu cho tất cả các âm thanh dựa trên giá trị của thanh trượt
+        function initializeVolumes() {
+            backgroundMusic.volume = parseFloat(bgVolumeSlider.value);
+            correctSound.volume = wrongSound.volume = parseFloat(effectVolumeSlider.value);
+            animalSound.volume = parseFloat(animalVolumeSlider.value);
+        }
+        initializeVolumes();
+
+        // Hàm mới: Hiển thị pop-up cài đặt
+        function showSettings() {
+            settingsPopup.classList.remove("hidden");
+        }
+
+        // Hàm mới: Ẩn pop-up cài đặt
+        function hideSettings() {
+            settingsPopup.classList.add("hidden");
+        }
+
+        // Hàm xáo trộn mảng (Fisher-Yates shuffle algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+            return array;
+        }
+
+        // Hàm bật/tắt nhạc nền tổng thể
+        function toggleBackgroundMusic() {
+            if (isMusicPlaying) {
+                backgroundMusic.pause();
+                audioIcon.src = "ui/audio_off.png";
+                audioStatus.textContent = "Âm thanh: Tắt";
+                isMusicPlaying = false;
+            } else {
+                backgroundMusic.play().then(() => {
+                    audioIcon.src = "ui/audio_on.png";
+                    audioStatus.textContent = "Âm thanh: Bật";
+                    isMusicPlaying = true;
+                }).catch(error => {
+                    console.error("Lỗi khi phát nhạc nền:", error);
+                    audioIcon.src = "ui/audio_off.png";
+                    audioStatus.textContent = "Âm thanh: Tắt";
+                    isMusicPlaying = false;
+                });
+            }
+        }
+
+        // Các hàm để điều chỉnh âm lượng riêng biệt
+        function setBackgroundMusicVolume(volume) {
+            backgroundMusic.volume = parseFloat(volume);
+        }
+
+        function setEffectSoundVolume(volume) {
+            correctSound.volume = parseFloat(volume);
+            wrongSound.volume = parseFloat(volume);
+        }
+
+        function setAnimalSoundVolume(volume) {
+            animalSound.volume = parseFloat(volume);
+        }
+
+        // Hàm mới: Bắt đầu game (cho nút "Tiếp tục chơi")
+        function continueGame() {
+            mainMenu.classList.add("hidden");
+            gameContainer.classList.remove("hidden");
+            // Chỉ tải lại câu hỏi hiện tại nếu game đang trong quá trình
+            loadQuestion();
+            // Đảm bảo nhạc nền được phát khi game bắt đầu
+            if (!isMusicPlaying) {
+                backgroundMusic.play().catch(err => console.warn("Lỗi khi phát nhạc nền lúc tiếp tục game:", err));
+            }
+        }
+
+        // Hàm mới: Bắt đầu chơi mới
+        function startNewGame() {
+            current = 0; // Đặt lại về câu hỏi đầu tiên
+            shuffledQuestions = shuffleArray([...originalQuestions]); // Xáo trộn lại câu hỏi
+            gameInProgress = true; // Đặt trạng thái game đang diễn ra
+            mainMenu.classList.add("hidden"); // Ẩn màn hình menu
+            gameContainer.classList.remove("hidden"); // Hiện màn hình trò chơi
+            loadQuestion(); // Tải câu hỏi đầu tiên
+            // Đảm bảo nhạc nền được phát khi game bắt đầu
+            if (!isMusicPlaying) {
+                backgroundMusic.play().catch(err => console.warn("Lỗi khi phát nhạc nền lúc bắt đầu game mới:", err));
+            }
+        }
+
+        // Hàm mới: Quay về màn hình chính
+        function backToMainMenu() {
+            gameContainer.classList.add("hidden"); // Ẩn màn hình game
+            mainMenu.classList.remove("hidden"); // Hiện màn hình menu chính
+            // Dừng mọi âm thanh game đang phát
+            animalSound.pause();
+            animalSound.currentTime = 0;
+            correctSound.pause();
+            correctSound.currentTime = 0;
+            wrongSound.pause();
+            wrongSound.currentTime = 0;
+           
+            // Hiển thị nút "Tiếp tục chơi" nếu game đang dở
+            if (gameInProgress && current < shuffledQuestions.length) {
+                continueGameBtn.classList.remove("hidden");
+                newGameBtn.textContent = "Chơi mới 🎉";
+            } else {
+                continueGameBtn.classList.add("hidden");
+                newGameBtn.textContent = "Chơi mới 🎉";
+            }
+        }
+
+        function loadQuestion() {
+            // Không cần dòng này nữa: answerButtons = document.querySelectorAll(".answers button");
+           
+            if (current >= shuffledQuestions.length) {
+                showEndGameScreen();
+                return;
+            }
+           
+            const q = shuffledQuestions[current];
+            questionElement.textContent = q.q;
+            feedbackElement.textContent = "";
+            feedbackElement.className = "feedback";
+            nextBtn.classList.add("hidden");
+            hintBtn.classList.remove("hidden");
+            hintBtn.disabled = false;
+            attemptsLeft = 2;
+           
+            if (currentAnimalImage) {
+                currentAnimalImage.remove();
+                currentAnimalImage = null;
+            }
+           
+            shuffledOptions = shuffleArray([...q.options]);
+            // Đảm bảo bạn đang tính toán đúng chỉ mục của câu trả lời sau khi xáo trộn
+            correctAnswerIndexInShuffled = shuffledOptions.indexOf(q.options[q.answer]);
+           
+            // LẶP QUA CẢ 3 NÚT ĐỂ CẬP NHẬT TRẠNG THÁI VÀ NỘI DUNG
+            answerButtons.forEach((btn, i) => {
+                // Kiểm tra xem có đủ tùy chọn cho nút không
+                if (shuffledOptions[i] !== undefined) {
+                    btn.textContent = shuffledOptions[i];
+                    btn.classList.remove('hidden'); // Đảm bảo nút không bị ẩn
+                } else {
+                    btn.textContent = ''; // Xóa nội dung nếu không có tùy chọn
+                    btn.classList.add('hidden'); // Ẩn nút nếu không có tùy chọn (phòng trường hợp câu hỏi có ít hơn 3 đáp án)
+                }
+                btn.disabled = false;
+                btn.style.background = 'linear-gradient(90deg, #64B5F6, #4DB6AC)';
+                btn.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+                btn.classList.remove('correct', 'wrong');
+            });
+        }
+
+        function checkAnswer(buttonIndex) {
+            const q = shuffledQuestions[current];
+           
+            hintBtn.disabled = true; // Vô hiệu hóa nút gợi ý sau khi trả lời
+           
+            if (buttonIndex === correctAnswerIndexInShuffled) {
+                feedbackElement.textContent = `✅ Chính xác! Tuyệt vời!`;
+                feedbackElement.className = "feedback";
+                answerButtons[buttonIndex].classList.add('correct');
+               
+                answerButtons.forEach(btn => btn.disabled = true);
+           
+                confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+           
+                const imageElement = document.createElement("img");
+                imageElement.className = "animal-image";
+                imageElement.src = q.image;
+                animalImageContainer.appendChild(imageElement);
+                currentAnimalImage = imageElement;
+           
+                correctSound.play().catch(err => console.error("Lỗi khi phát correctSound:", err));
+                setTimeout(() => {
+                    animalSound.src = `sound/${q.sound}`;
+                    animalSound.play().catch(err => console.error("Lỗi khi phát tiếng động vật:", err));
+                }, 300);
+           
+                nextBtn.classList.remove("hidden");
+            } else {
+                attemptsLeft--;
+                answerButtons[buttonIndex].classList.add('wrong');
+                answerButtons[buttonIndex].disabled = true; // Vô hiệu hóa nút sai đã chọn
+                wrongSound.play().catch(err => console.error("Lỗi khi phát wrongSound:", err));
+           
+                if (attemptsLeft === 0) {
+                    feedbackElement.textContent = `❌ Chưa đúng rồi! Đáp án chính xác là "${q.options[q.answer]}".`;
+                    feedbackElement.className = "feedback wrong-final";
+                    answerButtons.forEach((btn, i) => {
+                        btn.disabled = true; // Vô hiệu hóa tất cả các nút
+                        if (i === correctAnswerIndexInShuffled) {
+                            btn.classList.add('correct'); // Hiển thị đáp án đúng
+                        }
+                    });
+                    nextBtn.classList.remove("hidden");
+                    
+                    const imageElement = document.createElement("img");
+                    imageElement.className = "animal-image";
+                    imageElement.src = q.image;
+                    animalImageContainer.appendChild(imageElement);
+                    currentAnimalImage = imageElement;
+
+                    setTimeout(() => {
+                        animalSound.src = `sound/${q.sound}`;
+                        animalSound.play().catch(err => console.error("Lỗi khi phát tiếng động vật:", err));
+                    }, 300);
+
+                } else {
+                    feedbackElement.textContent = `Sai rồi! Con còn ${attemptsLeft} lượt thử nữa. Cố lên!`;
+                    feedbackElement.className = "feedback wrong-try-again";
+                }
+            }
+        }
+
+        function playHintSound() {
+            const q = shuffledQuestions[current];
+            animalSound.src = `sound/${q.sound}`;
+            animalSound.play().catch(err => console.error("Lỗi khi phát tiếng động vật gợi ý:", err));
+            feedbackElement.textContent = "🎶 Con hãy lắng nghe tiếng kêu của loài vật nhé!";
+            feedbackElement.className = "feedback hint-msg";
+            hintBtn.disabled = true; // Vô hiệu hóa nút gợi ý sau khi sử dụng
+        }
+
+        function nextQuestion() {
+            current++;
+            loadQuestion();
+        }
+
+        function showEndGameScreen() {
+            questionElement.textContent = "🌟 Hoan hô, nhà thám hiểm tài ba! Con đã xuất sắc khám phá hết thế giới động vật. Hãy tiếp tục học hỏi những điều kỳ diệu xung quanh con nhé! Cố gắng lên!"; // Đã sửa thông điệp kết thúc
+            feedbackElement.textContent = ""; // Xóa phản hồi cũ
+            feedbackElement.className = "feedback correct"; // Để thông điệp cuối màu xanh lá cây
+            answerButtons.forEach(btn => btn.classList.add('hidden')); // Ẩn các nút đáp án
+            nextBtn.classList.add('hidden'); // Ẩn nút "Câu hỏi tiếp theo"
+            hintBtn.classList.add('hidden'); // Ẩn nút gợi ý
+            
+            // Xóa hình ảnh nếu có
+            if (currentAnimalImage) {
+                currentAnimalImage.remove();
+                currentAnimalImage = null;
+            }
+
+            // Hiển thị một hình ảnh chúc mừng chung hoặc để trống
+            const finalImageElement = document.createElement("img");
+            finalImageElement.className = "animal-image";
+            finalImageElement.src = "image/congratulations.png"; // Thay bằng ảnh chúc mừng của bạn
+            animalImageContainer.appendChild(finalImageElement);
+            currentAnimalImage = finalImageElement; // Cập nhật biến tham chiếu
+            
+            // Đặt lại trạng thái game
+            gameInProgress = false;
+            
+            // Hiển thị lại nút BackToMenu
+            backToMenuBtn.classList.remove("hidden");
+        }
+
+        // Tải câu hỏi đầu tiên khi trang tải (nếu không ở menu chính)
+        // window.onload = function() { // Bạn có thể dùng đoạn này nếu muốn game tự động bắt đầu
+        //     loadQuestion();
+        // };
+        // Giờ game sẽ bắt đầu từ menu chính, nên không cần loadQuestion ở đây nữa.
+        // Chỉ cần đảm bảo nút "Bắt đầu chơi mới" có tên đúng khi tải trang lần đầu
+        newGameBtn.textContent = "Bắt đầu chơi 🎉";
+    </script>
+</body>
+</html>
